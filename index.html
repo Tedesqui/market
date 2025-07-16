@@ -73,9 +73,10 @@
       transform: scale(1.1);
     }
 
+    /* Estilo do botão enquanto grava */
     .mic-wrapper.recording #mic-button {
-      transform: scale(1.2);
-      background-color: #dc3545 !important;
+      transform: scale(2); /* Aumenta 100% */
+      background-color: #28a745 !important; /* Cor verde */
     }
     
     #mic-button svg {
@@ -138,24 +139,23 @@
   <button id="muteButton">🔇 Ativar Som</button>
 
   <!-- CENA AR.JS CORRIGIDA -->
-  <!-- Adicionado 'arjs' para ativar a câmera e o modo AR -->
   <a-scene vr-mode-ui="enabled: false" arjs='sourceType: webcam; debugUIEnabled: false; trackingMethod: best;'>
     <a-assets>
       <!-- Vídeos dos produtos com URLs funcionais para teste -->
       <video id="video_chocolate" src="videos/chocolate.mp4" playsinline webkit-playsinline loop crossOrigin="anonymous"></video>
       <video id="video_acucar" src="videos/acucar.mp4" playsinline webkit-playsinline loop crossOrigin="anonymous"></video>
-      <video id="video_frutas" src="https://placehold.co/frutas.mp4" playsinline webkit-playsinline loop crossOrigin="anonymous"></video>
+      <video id="video_frutas" src="videos/frutas.mp4" playsinline webkit-playsinline loop crossOrigin="anonymous"></video>
       <video id="video_inicial" src="videos/inicio.mp4" playsinline webkit-playsinline loop crossOrigin="anonymous"></video>
     </a-assets>
 
     <!-- Player de Vídeo Principal -->
-    <!-- Removida a animação de posição inicial para manter o vídeo fixo -->
+    <!-- Removido 'look-at' para que o vídeo não fique fixo na tela -->
        <a-entity id="video-holder" position="0 1.7 -10"
       animation="property: position; to: 0 1.7 -4; dur: 1500; easing: easeOutElastic">
-      <a-video id="main-video" width="3" height="3" src="#video_inicial" look-at="[camera]" autoplay loop></a-video>
+      <a-video id="main-video" width="3" height="3" src="#video_inicial" autoplay loop></a-video>
     </a-entity>
 
-    <!-- Câmera AR.js implícita (não precisa declarar <a-camera>) -->
+    <!-- Câmera AR.js implícita -->
     <a-entity camera></a-entity>
   </a-scene>
 
@@ -189,16 +189,15 @@
     const statusDiv = document.getElementById('status');
     const mainVideo = document.getElementById('main-video');
     const muteButton = document.getElementById('muteButton');
-    let isMuted = true; // Começa mudo para permitir autoplay
+    let isMuted = true;
+    let recognitionActive = false;
 
-    // Mapeia palavras-chave para os IDs dos vídeos
     const productVideos = {
       'chocolate': '#video_chocolate',
       'açúcar': '#video_acucar',
       'frutas': '#video_frutas'
     };
     
-    // Função para definir o estado de mudo do vídeo
     function setMuteState(muted) {
         const videoEl = mainVideo.components.material.material.map.image;
         if (videoEl) {
@@ -208,7 +207,6 @@
         muteButton.textContent = muted ? '🔇 Ativar Som' : '🔊 Mudo';
     }
 
-    // Verifica se o navegador suporta a Web Speech API
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
@@ -216,15 +214,33 @@
       recognition.continuous = false;
       recognition.interimResults = false;
 
-      micButton.addEventListener('click', () => {
+      // Eventos para pressionar e soltar o botão
+      micButton.addEventListener('mousedown', () => {
+        if (recognitionActive) return;
         try {
             recognition.start();
+            recognitionActive = true;
         } catch(e) {
             console.error("Erro ao iniciar reconhecimento de voz:", e);
-            statusDiv.textContent = "Erro ao iniciar. Tente novamente.";
-            statusDiv.style.display = 'block';
         }
       });
+      
+      micButton.addEventListener('mouseup', () => {
+        if (!recognitionActive) return;
+        recognition.stop();
+        recognitionActive = false;
+      });
+      
+      // Adiciona suporte para toque
+      micButton.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          micButton.dispatchEvent(new Event('mousedown'));
+      });
+      micButton.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          micButton.dispatchEvent(new Event('mouseup'));
+      });
+
 
       recognition.onstart = () => {
         micWrapper.classList.add('recording');
@@ -243,6 +259,7 @@
 
       recognition.onerror = (event) => {
         statusDiv.textContent = `Erro: ${event.error}`;
+        recognitionActive = false;
       };
 
       recognition.onresult = (event) => {
@@ -279,14 +296,12 @@
       statusDiv.style.display = 'block';
     }
     
-    // Event listener para o botão de mudo
     muteButton.addEventListener('click', () => {
       setMuteState(!isMuted);
       muteButton.classList.add('rotating');
       setTimeout(() => muteButton.classList.remove('rotating'), 300);
     });
     
-    // Autoplay do vídeo inicial
     document.querySelector('a-scene').addEventListener('loaded', () => {
         const initialVideo = document.querySelector('#video_inicial');
         initialVideo.muted = true;
@@ -297,3 +312,4 @@
   </script>
 </body>
 </html>
+
