@@ -75,7 +75,7 @@
 
     /* Estilo do botão enquanto grava */
     .mic-wrapper.recording #mic-button {
-      transform: scale(2); /* Aumenta 100% */
+      transform: scale(1.7); /* Aumenta 70% */
       background-color: #28a745 !important; /* Cor verde */
     }
     
@@ -149,9 +149,9 @@
     </a-assets>
 
     <!-- Player de Vídeo Principal -->
-    <!-- Adicionada animação elástica ao se aproximar -->
-    <a-entity id="video-holder" position="0 0 -10"
-      animation="property: position; to: 0 0 -3; dur: 1500; easing: easeOutElastic; startEvents: start-animation">
+    <!-- Adicionada animação elástica ao se aproximar e removido o look-at -->
+    <a-entity id="video-holder" position="0 1.7 -10"
+      animation="property: position; to: 0 1.7 -4; dur: 1500; easing: easeOutElastic; startEvents: start-animation">
       <a-video id="main-video" width="3" height="3" src="#video_inicial" autoplay loop></a-video>
     </a-entity>
 
@@ -206,7 +206,7 @@
             videoMaterial.material.map.image.muted = muted;
         }
         isMuted = muted;
-        muteButton.textContent = muted ? '🔇 Ativar Som' : '🔊 Mudo';
+        muteButton.textContent = muted ? '🔇 Ativar Som' : '� Mudo';
     }
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
