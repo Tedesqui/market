@@ -142,16 +142,17 @@
   <a-scene vr-mode-ui="enabled: false" arjs='sourceType: webcam; debugUIEnabled: false; trackingMethod: best;'>
     <a-assets>
       <!-- Vídeos dos produtos com URLs funcionais para teste -->
-      <video id="video_chocolate" src="videos/chocolate.mp4" playsinline webkit-playsinline loop crossOrigin="anonymous"></video>
-      <video id="video_acucar" src="videos/acucar.mp4" playsinline webkit-playsinline loop crossOrigin="anonymous"></video>
-      <video id="video_frutas" src="videos/frutas.mp4" playsinline webkit-playsinline loop crossOrigin="anonymous"></video>
-      <video id="video_inicial" src="videos/inicio.mp4" playsinline webkit-playsinline loop crossOrigin="anonymous"></video>
+      <video id="video_chocolate" src="https://placehold.co/600x400.mp4?text=Corredor+do+CHOCOLATE" playsinline webkit-playsinline loop crossOrigin="anonymous"></video>
+      <video id="video_acucar" src="https://placehold.co/600x400.mp4?text=Corredor+do+AÇÚCAR" playsinline webkit-playsinline loop crossOrigin="anonymous"></video>
+      <video id="video_frutas" src="https://placehold.co/600x400.mp4?text=Corredor+das+FRUTAS" playsinline webkit-playsinline loop crossOrigin="anonymous"></video>
+      <video id="video_inicial" src="https://placehold.co/600x400.mp4?text=Bem-vindo!+Fale+o+produto." playsinline webkit-playsinline loop crossOrigin="anonymous"></video>
     </a-assets>
 
     <!-- Player de Vídeo Principal -->
-    <!-- O vídeo agora é uma entidade independente na cena, não mais filho da câmera -->
-    <a-entity id="video-holder" position="0 1.7 -10">
-      <a-video id="main-video" width="3" height="3" src="#video_inicial" autoplay loop look-at="[camera]"></a-video>
+    <!-- Removido 'look-at' para que o vídeo não fique grudado na tela -->
+    <a-entity id="video-holder" position="0 1.7 -10"
+        animation="property: position; to: 0 1.7 -4; dur: 1500; easing: easeOutElastic">
+      <a-video id="main-video" width="3" height="3" src="#video_inicial" autoplay loop></a-video>
     </a-entity>
 
     <!-- A câmera é criada implicitamente pelo AR.js -->
