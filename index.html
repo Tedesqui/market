@@ -149,9 +149,9 @@
     </a-assets>
 
     <!-- Player de Vídeo Principal -->
-    <!-- Removido 'look-at' para que o vídeo não fique fixo na tela -->
-       <a-entity id="video-holder" position="0 1.7 -10"
-      animation="property: position; to: 0 1.7 -4; dur: 1500; easing: easeOutElastic">
+    <!-- Adicionada animação elástica ao se aproximar -->
+    <a-entity id="video-holder" position="0 0 -10"
+      animation="property: position; to: 0 0 -3; dur: 1500; easing: easeOutElastic; startEvents: start-animation">
       <a-video id="main-video" width="3" height="3" src="#video_inicial" autoplay loop></a-video>
     </a-entity>
 
@@ -188,6 +188,7 @@
     const micButton = document.getElementById('mic-button');
     const statusDiv = document.getElementById('status');
     const mainVideo = document.getElementById('main-video');
+    const videoHolder = document.getElementById('video-holder');
     const muteButton = document.getElementById('muteButton');
     let isMuted = true;
     let recognitionActive = false;
@@ -199,9 +200,10 @@
     };
     
     function setMuteState(muted) {
-        const videoEl = mainVideo.components.material.material.map.image;
-        if (videoEl) {
-            videoEl.muted = muted;
+        // Tenta obter o elemento de vídeo de dentro do componente a-video
+        const videoMaterial = mainVideo.components.material;
+        if (videoMaterial && videoMaterial.material.map && videoMaterial.material.map.image) {
+            videoMaterial.material.map.image.muted = muted;
         }
         isMuted = muted;
         muteButton.textContent = muted ? '🔇 Ativar Som' : '🔊 Mudo';
@@ -215,51 +217,49 @@
       recognition.interimResults = false;
 
       // Eventos para pressionar e soltar o botão
-      micButton.addEventListener('mousedown', () => {
+      const startRecognition = () => {
         if (recognitionActive) return;
         try {
+            micWrapper.classList.add('recording');
+            statusDiv.textContent = "Ouvindo...";
+            statusDiv.style.display = 'block';
             recognition.start();
             recognitionActive = true;
         } catch(e) {
             console.error("Erro ao iniciar reconhecimento de voz:", e);
+            micWrapper.classList.remove('recording');
+            statusDiv.style.display = 'none';
         }
-      });
+      };
       
-      micButton.addEventListener('mouseup', () => {
+      const stopRecognition = () => {
         if (!recognitionActive) return;
+        micWrapper.classList.remove('recording');
+        statusDiv.style.display = 'none';
         recognition.stop();
         recognitionActive = false;
-      });
-      
-      // Adiciona suporte para toque
-      micButton.addEventListener('touchstart', (e) => {
-          e.preventDefault();
-          micButton.dispatchEvent(new Event('mousedown'));
-      });
-      micButton.addEventListener('touchend', (e) => {
-          e.preventDefault();
-          micButton.dispatchEvent(new Event('mouseup'));
-      });
-
-
-      recognition.onstart = () => {
-        micWrapper.classList.add('recording');
-        statusDiv.textContent = "Ouvindo...";
-        statusDiv.style.display = 'block';
       };
+      
+      micButton.addEventListener('mousedown', startRecognition);
+      micButton.addEventListener('mouseup', stopRecognition);
+      micButton.addEventListener('mouseleave', stopRecognition); // Para o caso de o mouse sair do botão
+      
+      micButton.addEventListener('touchstart', (e) => { e.preventDefault(); startRecognition(); });
+      micButton.addEventListener('touchend', (e) => { e.preventDefault(); stopRecognition(); });
+
 
       recognition.onend = () => {
-        micWrapper.classList.remove('recording');
-        setTimeout(() => {
-            if (statusDiv.textContent === "Ouvindo...") {
-                 statusDiv.style.display = 'none';
-            }
-        }, 2000);
+        // Assegura que o estado visual seja redefinido se a reconhecimento parar por si só
+        if (recognitionActive) {
+            micWrapper.classList.remove('recording');
+            statusDiv.style.display = 'none';
+            recognitionActive = false;
+        }
       };
 
       recognition.onerror = (event) => {
         statusDiv.textContent = `Erro: ${event.error}`;
-        recognitionActive = false;
+        // A lógica de redefinição visual já está no 'onend', que é chamado após um erro.
       };
 
       recognition.onresult = (event) => {
@@ -303,6 +303,8 @@
     });
     
     document.querySelector('a-scene').addEventListener('loaded', () => {
+        // Inicia a animação elástica e o vídeo inicial
+        videoHolder.emit('start-animation');
         const initialVideo = document.querySelector('#video_inicial');
         initialVideo.muted = true;
         initialVideo.play().catch(e => console.error("Autoplay bloqueado:", e));
@@ -312,4 +314,3 @@
   </script>
 </body>
 </html>
-
