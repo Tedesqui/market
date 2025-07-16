@@ -147,14 +147,14 @@
       <video id="video_frutas" src="videos/frutas.mp4" playsinline webkit-playsinline loop crossOrigin="anonymous"></video>
       <video id="video_inicial" src="videos/inicio.mp4" playsinline webkit-playsinline loop crossOrigin="anonymous"></video>
     </a-assets>
+
     <!-- Player de Vídeo Principal -->
-    <!-- Removido 'look-at' para que o vídeo não fique grudado na tela -->
-    <a-entity id="video-holder" position="0 1.7 -10"
-      animation="property: position; to: 0 1.7 -4; dur: 1500; easing: easeOutElastic">
-      <a-video width="3" height="3" src="#video_inicial" look-at="[camera]" color="#FFFFFF" autoplay loop muted></a-video>
+    <!-- O vídeo agora é uma entidade independente na cena, não mais filho da câmera -->
+    <a-entity id="video-holder" position="0 1.6 -3">
+      <a-video id="main-video" width="2" height="1.5" src="#video_inicial" autoplay loop></a-video>
     </a-entity>
 
-    <!-- Câmera AR.js implícita -->
+    <!-- A câmera é criada implicitamente pelo AR.js -->
     <a-entity camera></a-entity>
   </a-scene>
 
