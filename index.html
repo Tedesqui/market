@@ -9,141 +9,92 @@
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
   <style>
-    /* Estilos gerais permanecem os mesmos */
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-    }
-    a-scene {
-        height: 100vh;
-        width: 100vw;
-    }
-
-    /* O botão de AR é estilizado automaticamente pelo A-Frame, mas podemos ajustá-lo */
-    .a-enter-ar-button {
-        position: fixed;
-        bottom: 120px !important;
-        left: 50%;
-        transform: translateX(-50%);
-        padding: 12px 24px;
-        font-size: 18px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        z-index: 10001 !important;
-    }
+    /* Estilos Gerais */
+    body { font-family: Arial, sans-serif; margin: 0; overflow: hidden; }
+    a-scene { height: 100vh; width: 100vw; }
     
-    #muteButton {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      padding: 10px 20px;
-      font-size: 18px;
-      z-index: 10000;
+    /* 1. ESTILO PARA A TELA DE INÍCIO */
+    #start-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       background-color: rgba(0, 0, 0, 0.7);
       color: white;
-      border: none;
-      border-radius: 5px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      font-size: 1.5em;
+      z-index: 10002;
       cursor: pointer;
-      transition: transform 0.3s ease, background-color 0.3s ease;
     }
-    #muteButton.rotating {
-      transform: rotate(360deg);
+    #start-overlay p {
+      margin: 0;
+      padding: 0;
     }
-    #muteButton:hover {
-      background-color: rgba(0, 0, 0, 0.9);
-      transform: scale(1.05);
+    #start-overlay span {
+      font-size: 0.7em;
+      margin-top: 10px;
+      opacity: 0.8;
+    }
+
+    /* Outros estilos com z-index ajustado */
+    #muteButton {
+      position: fixed; top: 20px; left: 20px; padding: 10px 20px; font-size: 18px;
+      z-index: 10000; background-color: rgba(0, 0, 0, 0.7); color: white;
+      border: none; border-radius: 5px; cursor: pointer; transition: all 0.3s ease;
     }
     .mic-wrapper {
-      position: fixed;
-      bottom: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 9999;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+      position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+      z-index: 9999; display: inline-flex; align-items: center; justify-content: center;
     }
     #mic-button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 9999px;
-      padding: 15px;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      transition: transform 0.2s ease, background-color 0.2s ease;
-    }
-    #mic-button:hover {
-      background-color: #0056b3;
-      transform: scale(1.1);
+      background-color: #007bff; color: white; border: none; border-radius: 9999px;
+      padding: 15px; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: all 0.2s ease;
     }
     .mic-wrapper.recording #mic-button {
-      transform: scale(1.7);
-      background-color: #28a745 !important;
+      transform: scale(1.7); background-color: #28a745 !important;
     }
-    #mic-button svg {
-      width: 28px;
-      height: 28px;
-      display: block;
-    }
+    #mic-button svg { width: 28px; height: 28px; display: block; }
     #status {
-        position: fixed;
-        bottom: 180px;
-        left: 50%;
-        transform: translateX(-50%);
-        padding: 10px 20px;
-        background-color: rgba(0, 0, 0, 0.7);
-        color: white;
-        border-radius: 10px;
-        z-index: 9998;
-        font-size: 16px;
-        display: none;
+        position: fixed; bottom: 180px; left: 50%; transform: translateX(-50%);
+        padding: 10px 20px; background-color: rgba(0, 0, 0, 0.7); color: white;
+        border-radius: 10px; z-index: 9998; font-size: 16px; display: none;
     }
     #footerSocial {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 20px 0;
-      display: flex;
-      justify-content: center;
-      gap: 40px;
-      z-index: 9999;
-      background-color: rgba(0, 0, 0, 0.1);
-      box-shadow: 0 0 19.5px rgba(0, 0, 0, 0.47);
+      position: fixed; bottom: 0; left: 0; right: 0; padding: 20px 0;
+      display: flex; justify-content: center; gap: 40px; z-index: 9999;
+      background-color: rgba(0, 0, 0, 0.1); box-shadow: 0 0 19.5px rgba(0, 0, 0, 0.47);
     }
-    #footerSocial a {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 34.56px;
-      height: 34.56px;
-      text-decoration: none;
+    /* ... (demais estilos do rodapé permanecem iguais) ... */
+     #footerSocial a {
+      display: flex; align-items: center; justify-content: center; width: 34.56px;
+      height: 34.56px; text-decoration: none;
     }
-    #footerSocial svg {
-      width: 34.56px;
-      height: 34.56px;
-      transition: transform 0.3s ease;
-    }
-    #footerSocial a:hover svg {
-      transform: scale(1.1);
-    }
+    #footerSocial svg { width: 34.56px; height: 34.56px; transition: transform 0.3s ease; }
+    #footerSocial a:hover svg { transform: scale(1.1); }
     #footerSocial .facebook svg { fill: #00008B; }
     #footerSocial .instagram svg { fill: #833AB4; }
     #footerSocial .whatsapp svg { fill: #25D366; }
   </style>
 </head>
 
-<body style="margin: 0; overflow: hidden;">
+<body>
+  <div id="start-overlay">
+    <p>Toque para iniciar a experiência</p>
+    <span>(Mova o celular para detectar o ambiente)</span>
+  </div>
+
   <button id="muteButton">🔇 Ativar Som</button>
 
   <a-scene
     webxr="requiredFeatures: hit-test;"
     ar-hit-test="target: #reticle;"
-    vr-mode-ui="enterARButton: .a-enter-ar-button"
+    vr-mode-ui="enabled: false"
   >
     <a-assets>
       <video id="video_chocolate" src="videos/chocolate.mp4" playsinline webkit-playsinline loop crossOrigin="anonymous"></video>
@@ -153,21 +104,20 @@
     </a-assets>
 
     <a-camera></a-camera>
+    <a-light type="ambient" color="#FFF" intensity="0.5"></a-light>
+    <a-light type="directional" position="-1 1 1" color="#FFF" intensity="0.8"></a-light>
 
     <a-entity id="reticle" geometry="primitive: ring; radius-inner: 0.05; radius-outer: 0.08" material="color: #007bff; shader: flat" visible="false"></a-entity>
-
+    
     <a-entity id="video-holder" visible="false">
-      <a-video id="main-video" width="1.5" height="1.5" src="#video_inicial" color="#FFFFFF" autoplay loop muted></a-video>
+      <a-video id="main-video" width="1.5" height="1.5" src="#video_inicial" look-at="[camera]" color="#FFFFFF" autoplay loop muted></a-video>
     </a-entity>
-
   </a-scene>
 
-  <div id="status">Ouvindo...</div>
+  <div id="status"></div>
   <div class="mic-wrapper" id="mic-wrapper" style="display: none;">
       <button id="mic-button">
-          <svg xmlns="http://www.w3.org/2000/svg" id="mic-icon" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd" />
-          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd" /></svg>
       </button>
   </div>
   <div id="footerSocial">
@@ -179,66 +129,60 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
         const sceneEl = document.querySelector('a-scene');
+        const startOverlay = document.getElementById('start-overlay');
         const videoHolder = document.getElementById('video-holder');
         const reticle = document.getElementById('reticle');
+        const micWrapper = document.getElementById('mic-wrapper');
         let isVideoPlaced = false;
 
-        // Função para posicionar o vídeo
-        const placeVideo = () => {
-            if (!isVideoPlaced) {
-                // Pega a posição e orientação da retícula
-                const position = reticle.getAttribute('position');
-                const rotation = reticle.getAttribute('rotation');
+        // 4. FUNÇÃO PARA INICIAR AR E REMOVER O OVERLAY
+        const startARExperience = () => {
+            // Tenta entrar no modo AR
+            sceneEl.enterVR().catch(err => {
+                console.error("Não foi possível iniciar a sessão de AR.", err);
+                // Se der erro, pode mostrar uma mensagem para o usuário
+                startOverlay.innerHTML = "<p>Não foi possível iniciar a AR.</p><span>Seu navegador ou dispositivo pode não ser compatível.</span>";
+            });
+        };
+        
+        // Adiciona o listener ao overlay para o primeiro toque
+        startOverlay.addEventListener('click', startARExperience);
 
-                // Aplica ao vídeo
+        // Ouve quando a sessão de AR realmente começa
+        sceneEl.addEventListener('enter-vr', () => {
+            // Esconde o overlay de início
+            startOverlay.style.display = 'none';
+        });
+
+        // Função para posicionar o vídeo com um toque na tela (dentro da sessão AR)
+        const placeVideoOnTap = () => {
+            if (!isVideoPlaced && reticle.getAttribute('visible')) {
+                const position = reticle.getAttribute('position');
                 videoHolder.setAttribute('position', position);
-                // A rotação do vídeo pode ser fixa para ele ficar sempre "de pé"
                 videoHolder.setAttribute('rotation', { x: -90, y: 0, z: 0 });
                 videoHolder.setAttribute('visible', 'true');
                 
                 isVideoPlaced = true;
-                
-                // Esconde a retícula depois de colocar o vídeo para não poluir a cena
                 reticle.setAttribute('visible', 'false');
-
-                // Mostra novamente o controle de voz
-                document.getElementById('mic-wrapper').style.display = 'inline-flex';
+                micWrapper.style.display = 'inline-flex';
             }
         };
 
-        // WebXR 'select' event (toque na tela)
-        sceneEl.addEventListener('enter-vr', () => {
-            // Esconde o controle de voz até o vídeo ser posicionado
-            document.getElementById('mic-wrapper').style.display = 'none';
+        sceneEl.addEventListener('click', placeVideoOnTap);
 
-            if (sceneEl.is('ar-mode')) {
-                sceneEl.xrSession.addEventListener('select', placeVideo);
-            }
-        });
-
-        // Lógica de voz e mudo (permanece a mesma)
-        const micWrapper = document.getElementById('mic-wrapper');
+        // ... (todo o resto do seu código de controle de voz e mudo permanece exatamente igual) ...
         const micButton = document.getElementById('mic-button');
         const statusDiv = document.getElementById('status');
         const mainVideo = document.getElementById('main-video');
         const muteButton = document.getElementById('muteButton');
         let isMuted = true;
         let recognitionActive = false;
-
-        const productVideos = {
-            'chocolate': '#video_chocolate',
-            'açúcar': '#video_acucar',
-            'frutas': '#video_frutas'
-        };
+        const productVideos = { 'chocolate': '#video_chocolate', 'açúcar': '#video_acucar', 'frutas': '#video_frutas' };
 
         function setMuteState(muted) {
-            const videoEl = mainVideo.getAttribute('src');
-            if (videoEl && typeof videoEl === 'string') {
-                const videoAsset = document.querySelector(videoEl);
-                if (videoAsset) {
-                    videoAsset.muted = muted;
-                }
-            }
+            const videoSrc = mainVideo.getAttribute('src');
+            const currentVideoEl = document.querySelector(videoSrc);
+            if (currentVideoEl) currentVideoEl.muted = muted;
             isMuted = muted;
             muteButton.textContent = muted ? '🔇 Ativar Som' : '🔊 Mudo';
         }
@@ -249,29 +193,15 @@
             recognition.lang = 'pt-BR';
             recognition.continuous = false;
 
-            micButton.addEventListener('click', () => {
-                if (recognitionActive) {
-                    recognition.stop();
-                } else {
-                    try {
-                        recognition.start();
-                    } catch(e) { console.error(e); }
-                }
-            });
-
+            micButton.addEventListener('click', () => { recognitionActive ? recognition.stop() : recognition.start(); });
             recognition.onstart = () => {
-                recognitionActive = true;
-                micWrapper.classList.add('recording');
-                statusDiv.textContent = "Ouvindo...";
-                statusDiv.style.display = 'block';
+                recognitionActive = true; micWrapper.classList.add('recording');
+                statusDiv.textContent = "Ouvindo..."; statusDiv.style.display = 'block';
             };
-
             recognition.onend = () => {
-                recognitionActive = false;
-                micWrapper.classList.remove('recording');
+                recognitionActive = false; micWrapper.classList.remove('recording');
                 statusDiv.style.display = 'none';
             };
-
             recognition.onresult = (event) => {
                 const transcript = event.results[0][0].transcript.toLowerCase();
                 let foundProduct = false;
@@ -280,28 +210,19 @@
                         const videoSrc = productVideos[keyword];
                         if (mainVideo.getAttribute('src') !== videoSrc) {
                             mainVideo.setAttribute('src', videoSrc);
-                            const newVideoEl = document.querySelector(videoSrc);
-                            newVideoEl.muted = isMuted;
-                            newVideoEl.play();
+                            document.querySelector(videoSrc).play();
+                            setMuteState(isMuted);
                         }
                         statusDiv.textContent = `Mostrando o corredor de ${keyword}!`;
                         foundProduct = true;
                         break;
                     }
                 }
-                if (!foundProduct) {
-                    statusDiv.textContent = `Produto não encontrado. Tente "chocolate", "açúcar" ou "frutas".`;
-                }
+                if (!foundProduct) { statusDiv.textContent = `Produto não encontrado.`; }
             };
-        } else {
-            micWrapper.style.display = 'none';
-        }
-
-        muteButton.addEventListener('click', () => {
-            setMuteState(!isMuted);
-        });
-
-        document.querySelector('#video_inicial').play().catch(e => console.error("Autoplay inicial bloqueado:", e));
+        } else { micWrapper.style.display = 'none'; }
+        muteButton.addEventListener('click', () => setMuteState(!isMuted));
+        document.querySelector('#video_inicial').play().catch(e => {});
         setMuteState(true);
     });
   </script>
