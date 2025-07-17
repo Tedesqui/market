@@ -33,7 +33,7 @@
 </head>
 
 <body style="margin: 0; overflow: hidden;">
-  <button id="muteButton">PLAY</button>
+  <button id="muteButton">🔊 Mudo</button>
 
   <a-scene 
     vr-mode-ui="enabled: false" 
@@ -51,7 +51,7 @@
 
 <a-entity id="video-holder" position="0 1.7 -15"
   animation="property: position; to: 0 1.7 -10; dur: 1500; easing: easeOutElastic">
-  <a-video width="3" height="6" src="#video_inicial" color="#FFFFFF" loop muted></a-video>
+  <a-video width="3" height="6" src="#video_inicial" color="#FFFFFF" autoplay loop></a-video>
 </a-entity>
   </a-scene>
 
@@ -87,8 +87,7 @@
     const videoOfertas = document.querySelector('#video_ofertas');
     const allVideos = [initialVideo, videoFeijao, videoAcucar, videoChocolate, videoOfertas];
 
-    let isMuted = true;
-    let firstPlay = true; // Controla o primeiro clique no botão PLAY
+    let isMuted = false; // Começa com som ativado
     let recognition;
     let recognizing = false;
     let lastPlayedVideo = null; 
@@ -103,23 +102,19 @@
     }
 
     muteButton.addEventListener('click', () => {
-        if (firstPlay) {
-            initialVideo.muted = false;
-            initialVideo.play().catch(e => console.error("Initial play failed", e));
-            isMuted = false;
-            firstPlay = false;
-            muteButton.textContent = '🔊 Mudo';
-        } else {
-            setMuteState(!isMuted);
-        }
+        setMuteState(!isMuted);
         muteButton.classList.add('rotating');
         setTimeout(() => muteButton.classList.remove('rotating'), 300);
     });
 
     document.querySelector('a-scene').addEventListener('loaded', () => {
-        // Garante que os vídeos comecem tecnicamente "mutados" e pausados.
-        isMuted = true;
-        allVideos.forEach(v => v.muted = true);
+        // Tenta iniciar o vídeo com som.
+        setMuteState(false);
+        initialVideo.play().catch(e => {
+            console.error("Autoplay com som foi bloqueado pelo navegador. Interação do usuário é necessária.", e);
+            // Fallback para mutado se o autoplay com som falhar.
+            setMuteState(true);
+        });
     });
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
