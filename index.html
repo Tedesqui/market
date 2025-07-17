@@ -27,22 +27,22 @@
         align-items: center;
     }
     #playPauseButton:not(.is-paused) {
-        padding: 2.5px 10px; /* Altura do botão Play reduzida */
-        font-size: 16px; /* Tamanho da fonte do texto Play reduzido em 50% */
+        padding: 0 10px; /* Altura do botão Play reduzida */
+        font-size: 9px; /* Tamanho da fonte do texto Play reduzido em 50% */
     }
     #playPauseButton.is-paused {
         padding: 2.5px 10px; /* Tamanho do botão Pause reduzido em 50% */
-        font-size: 16px; /* Tamanho da fonte do texto Pause reduzido em 50% */
+        font-size: 9px; /* Tamanho da fonte do texto Pause reduzido em 50% */
     }
     #playPauseButton span { 
         color: #28a745; 
         line-height: 1;
     }
     #playPauseButton:not(.is-paused) span {
-        font-size: 3em; /* Ícone de Play reduzido em 50% */
+        font-size: 2em; /* Ícone de Play reduzido em 50% */
     }
     #playPauseButton.is-paused span {
-        font-size: 1.6em; /* Ícone de Pause reduzido em 50% */
+        font-size: 0.5em; /* Ícone de Pause reduzido em 50% */
     }
     #playPauseButton.rotating{transform:rotate(360deg)}
     #playPauseButton:hover{transform:scale(1.05)}
@@ -52,7 +52,7 @@
     .mic-wrapper.recording #mic-button{transform:scale(1.7);background-color:#28a745!important}
     #mic-button svg{width:28px;height:28px;display:block}
     #status{position:fixed;bottom:210px;left:50%;transform:translateX(-50%);padding:10px 20px;background-color:rgba(0,0,0,0.7);color:white;border-radius:10px;z-index:998;font-size:16px;display:none}
-    #recognized-text{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:8px 15px;background-color:rgba(0,0,0,0.75);color:white;border-radius:8px;z-index:998;font-size:16px;display:none;text-align:center;max-width:90%}
+    #recognized-text{position:fixed;bottom:120px;left:50%;transform:translateX(-50%);padding:8px 15px;background-color:rgba(0,0,0,0.75);color:white;border-radius:8px;z-index:998;font-size:16px;display:none;text-align:center;max-width:90%}
     #text-input-container {
         position: fixed;
         bottom: 80px;
@@ -111,7 +111,7 @@
 
 <a-entity id="video-holder" position="0 1.7 -15"
   animation="property: position; to: 0 1.7 -10; dur: 1500; easing: easeOutElastic">
-  <a-video width="6" height="6" src="#video_inicial" color="#FFFFFF"></a-video>
+  <a-video width="3" height="6" src="#video_inicial" color="#FFFFFF"></a-video>
 </a-entity>
   </a-scene>
 
@@ -231,7 +231,7 @@
 
             setTimeout(() => {
                 recognizedTextDiv.style.display = 'none';
-            }, 3000);
+            }, 5000);
 
             handleSpeechCommand(speechResult.toLowerCase());
         };
@@ -320,7 +320,7 @@
             try {
                 micWrapper.classList.add('recording');
                 statusDiv.style.display = 'block';
-                if(navigator.vibrate) navigator.vibrate(200);
+                if(navigator.vibrate) navigator.vibrate(50);
                 
                 recognition.start();
                 recognizing = true;
