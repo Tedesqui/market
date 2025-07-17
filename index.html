@@ -12,7 +12,7 @@
 
   <style>
     body{margin:0}
-    #playPauseButton{position:fixed;top:20px;left:20px;padding:10px 20px;font-size:18px;z-index:1000;background-color:rgba(0,0,0,0.7);color:white;border:none;border-radius:5px;cursor:pointer;transition:.3s}
+    #playPauseButton{position:fixed;top:20px;left:20px;padding:10px 20px;font-size:18px;z-index:1000;background-color:rgba(0,0,0,0.5);color:white;border:none;border-radius:5px;cursor:pointer;transition:.3s}
     #playPauseButton.rotating{transform:rotate(360deg)}
     #playPauseButton:hover{background-color:rgba(0,0,0,0.9);transform:scale(1.05)}
     .mic-wrapper{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);z-index:999;display:inline-flex;align-items:center;justify-content:center}
@@ -50,7 +50,7 @@
 
 <a-entity id="video-holder" position="0 1.7 -15"
   animation="property: position; to: 0 1.7 -10; dur: 1500; easing: easeOutElastic">
-  <a-video width="3" height="6" src="#video_inicial" color="#FFFFFF" loop></a-video>
+  <a-video width="5" height="6" src="#video_inicial" color="#FFFFFF" loop></a-video>
 </a-entity>
   </a-scene>
 
