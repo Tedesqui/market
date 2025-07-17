@@ -41,12 +41,12 @@
     arjs="sourceType: webcam; gpsMinAccuracy: 50; gpsTimeInterval: 3000;"
   >
     <a-assets>
-      <video id="video_chocolate" src="videos/chocolate.mp4?v=1721235653639" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="video_acucar" src="videos/acucar.mp4?v=1721235651598" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="video_feijao" src="videos/feijao.mp4?v=1721235655938" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="video_inicial" src="videos/inicio.mp4?v=1721235659837" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="video_chocolate" src="videos/chocolate.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="video_acucar" src="videos/acucar.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="video_feijao" src="videos/feijao.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="video_inicial" src="videos/inicio.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
       <!-- Novo vídeo de ofertas -->
-      <video id="video_ofertas" src="videos/ofertas.mp4?v=1721258162331" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="video_ofertas" src="videos/ofertas.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
     </a-assets>
 
 <a-entity id="video-holder" position="0 1.7 -15"
@@ -85,33 +85,24 @@
     const videoAcucar = document.querySelector('#video_acucar');
     const videoChocolate = document.querySelector('#video_chocolate');
     const videoOfertas = document.querySelector('#video_ofertas');
-    const allVideos = [initialVideo, videoFeijao, videoAcucar, videoChocolate, videoOfertas];
 
     let isMuted = true;
     let recognition;
     let recognizing = false;
-    let lastPlayedVideo = null;
-    let newVideoPlayed = false;
 
     function setMuteState(muted) {
+        if (initialVideo) {
+            initialVideo.muted = muted;
+            if (!muted) {
+                initialVideo.play().catch(() => {});
+            }
+        }
         isMuted = muted;
-        allVideos.forEach(video => {
-            video.muted = isMuted;
-        });
         muteButton.textContent = muted ? '🔇 Ativar Som' : '🔊 Mudo';
     }
 
     muteButton.addEventListener('click', () => {
-        // Altera o estado de mudo
         setMuteState(!isMuted);
-
-        // Encontra o vídeo atual e o reproduz
-        const currentVideoSrcId = videoHolder.getAttribute('src').substring(1);
-        const currentVideo = document.getElementById(currentVideoSrcId);
-        if (currentVideo) {
-            currentVideo.play().catch(e => console.error("Play failed", e));
-        }
-
         muteButton.classList.add('rotating');
         setTimeout(() => muteButton.classList.remove('rotating'), 300);
     });
@@ -134,9 +125,11 @@
             const speechResult = event.results[0][0].transcript;
             console.log('Você disse:', speechResult.toLowerCase());
             
+            // Exibe o texto reconhecido
             recognizedTextDiv.textContent = `"${speechResult}"`;
             recognizedTextDiv.style.display = 'block';
 
+            // Esconde o texto após 3 segundos
             setTimeout(() => {
                 recognizedTextDiv.style.display = 'none';
             }, 3000);
@@ -152,11 +145,6 @@
             recognizing = false;
             micWrapper.classList.remove('recording');
             statusDiv.style.display = 'none';
-
-            if (!newVideoPlayed && lastPlayedVideo) {
-                lastPlayedVideo.play();
-            }
-            lastPlayedVideo = null;
         };
     } else {
         console.error("Speech Recognition API not supported in this browser.");
@@ -164,60 +152,62 @@
     }
 
     function handleSpeechCommand(command) {
-        let videoTriggered = false;
         stopAllVideos();
+        // Redefine as dimensões para o padrão (vertical)
         videoHolder.setAttribute('width', '3');
         videoHolder.setAttribute('height', '6');
 
         if (command.includes('feijão') || command.includes('feijao')) {
             videoHolder.setAttribute('src', '#video_feijao');
             videoFeijao.play();
-            videoTriggered = true;
         } else if (command.includes('açúcar') || command.includes('acucar')) {
             videoHolder.setAttribute('src', '#video_acucar');
             videoAcucar.play();
-            videoTriggered = true;
         } else if (command.includes('chocolate')) {
             videoHolder.setAttribute('src', '#video_chocolate');
             videoChocolate.play();
-            videoTriggered = true;
-        } else if (command.includes('ofertas') || command.includes('oferta')) {
+        } else if (command.includes('ofertas')) {
+            // Altera as dimensões para o vídeo de ofertas (horizontal)
             videoHolder.setAttribute('width', '6');
-            videoHolder.setAttribute('height', '3.375');
+            videoHolder.setAttribute('height', '3.375'); // Proporção 16:9
             videoHolder.setAttribute('src', '#video_ofertas');
             videoOfertas.play();
-            videoTriggered = true;
-        }
-        
-        if (videoTriggered) {
-            newVideoPlayed = true;
         }
     }
 
     function stopAllVideos() {
-        allVideos.forEach(video => {
-            video.pause();
-            video.currentTime = 0;
-        });
+        videoFeijao.pause();
+        videoFeijao.currentTime = 0;
+        videoAcucar.pause();
+        videoAcucar.currentTime = 0;
+        videoChocolate.pause();
+        videoChocolate.currentTime = 0;
+        initialVideo.pause();
+        initialVideo.currentTime = 0;
+        videoOfertas.pause(); // Garante que o vídeo de ofertas também pare
+        videoOfertas.currentTime = 0;
     }
     
+    // Nova função para pausar todos os vídeos sem resetar o tempo
     function pauseAllVideos() {
-        allVideos.forEach(video => video.pause());
+        videoFeijao.pause();
+        videoAcucar.pause();
+        videoChocolate.pause();
+        initialVideo.pause();
+        videoOfertas.pause();
     }
 
     micButton.addEventListener('touchstart', (e) => {
         e.preventDefault();
         
-        newVideoPlayed = false;
-        lastPlayedVideo = allVideos.find(video => !video.paused) || null;
-        
+        // Pausa qualquer vídeo que esteja tocando
         pauseAllVideos();
 
         if (!recognizing && recognition) {
             try {
                 micWrapper.classList.add('recording');
                 statusDiv.style.display = 'block';
-                if(navigator.vibrate) navigator.vibrate(50);
+                if(navigator.vibrate) navigator.vibrate(100);
                 
                 recognition.start();
                 recognizing = true;
@@ -225,9 +215,6 @@
                 console.error("Erro ao iniciar o reconhecimento:", err);
                 micWrapper.classList.remove('recording');
                 statusDiv.style.display = 'none';
-                if (lastPlayedVideo) {
-                    lastPlayedVideo.play();
-                }
             }
         }
     });
