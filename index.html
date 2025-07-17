@@ -85,10 +85,13 @@
     const videoAcucar = document.querySelector('#video_acucar');
     const videoChocolate = document.querySelector('#video_chocolate');
     const videoOfertas = document.querySelector('#video_ofertas');
+    const allVideos = [initialVideo, videoFeijao, videoAcucar, videoChocolate, videoOfertas];
 
     let isMuted = true;
     let recognition;
     let recognizing = false;
+    let lastPlayedVideo = null; // Armazena o vídeo que estava tocando
+    let newVideoPlayed = false; // Flag para saber se um novo vídeo foi acionado
 
     function setMuteState(muted) {
         if (initialVideo) {
@@ -125,11 +128,9 @@
             const speechResult = event.results[0][0].transcript;
             console.log('Você disse:', speechResult.toLowerCase());
             
-            // Exibe o texto reconhecido
             recognizedTextDiv.textContent = `"${speechResult}"`;
             recognizedTextDiv.style.display = 'block';
 
-            // Esconde o texto após 3 segundos
             setTimeout(() => {
                 recognizedTextDiv.style.display = 'none';
             }, 3000);
@@ -145,6 +146,12 @@
             recognizing = false;
             micWrapper.classList.remove('recording');
             statusDiv.style.display = 'none';
+
+            // Se nenhum comando de vídeo foi executado, retoma o vídeo anterior
+            if (!newVideoPlayed && lastPlayedVideo) {
+                lastPlayedVideo.play();
+            }
+            lastPlayedVideo = null; // Limpa a variável para a próxima interação
         };
     } else {
         console.error("Speech Recognition API not supported in this browser.");
@@ -152,62 +159,60 @@
     }
 
     function handleSpeechCommand(command) {
+        let videoTriggered = false;
         stopAllVideos();
-        // Redefine as dimensões para o padrão (vertical)
         videoHolder.setAttribute('width', '3');
         videoHolder.setAttribute('height', '6');
 
         if (command.includes('feijão') || command.includes('feijao')) {
             videoHolder.setAttribute('src', '#video_feijao');
             videoFeijao.play();
+            videoTriggered = true;
         } else if (command.includes('açúcar') || command.includes('acucar')) {
             videoHolder.setAttribute('src', '#video_acucar');
             videoAcucar.play();
+            videoTriggered = true;
         } else if (command.includes('chocolate')) {
             videoHolder.setAttribute('src', '#video_chocolate');
             videoChocolate.play();
-        } else if (command.includes('ofertas')) {
-            // Altera as dimensões para o vídeo de ofertas (horizontal)
+            videoTriggered = true;
+        } else if (command.includes('ofertas') || command.includes('oferta')) {
             videoHolder.setAttribute('width', '6');
-            videoHolder.setAttribute('height', '3.375'); // Proporção 16:9
+            videoHolder.setAttribute('height', '3.375');
             videoHolder.setAttribute('src', '#video_ofertas');
             videoOfertas.play();
+            videoTriggered = true;
+        }
+        
+        if (videoTriggered) {
+            newVideoPlayed = true;
         }
     }
 
     function stopAllVideos() {
-        videoFeijao.pause();
-        videoFeijao.currentTime = 0;
-        videoAcucar.pause();
-        videoAcucar.currentTime = 0;
-        videoChocolate.pause();
-        videoChocolate.currentTime = 0;
-        initialVideo.pause();
-        initialVideo.currentTime = 0;
-        videoOfertas.pause(); // Garante que o vídeo de ofertas também pare
-        videoOfertas.currentTime = 0;
+        allVideos.forEach(video => {
+            video.pause();
+            video.currentTime = 0;
+        });
     }
     
-    // Nova função para pausar todos os vídeos sem resetar o tempo
     function pauseAllVideos() {
-        videoFeijao.pause();
-        videoAcucar.pause();
-        videoChocolate.pause();
-        initialVideo.pause();
-        videoOfertas.pause();
+        allVideos.forEach(video => video.pause());
     }
 
     micButton.addEventListener('touchstart', (e) => {
         e.preventDefault();
         
-        // Pausa qualquer vídeo que esteja tocando
-        pauseAllVideos();
+        newVideoPlayed = false; // Reseta a flag
+        lastPlayedVideo = allVideos.find(video => !video.paused) || null; // Encontra o vídeo que está tocando
+        
+        pauseAllVideos(); // Pausa todos os vídeos
 
         if (!recognizing && recognition) {
             try {
                 micWrapper.classList.add('recording');
                 statusDiv.style.display = 'block';
-                if(navigator.vibrate) navigator.vibrate(50);
+                if(navigator.vibrate) navigator.vibrate(100);
                 
                 recognition.start();
                 recognizing = true;
@@ -215,6 +220,9 @@
                 console.error("Erro ao iniciar o reconhecimento:", err);
                 micWrapper.classList.remove('recording');
                 statusDiv.style.display = 'none';
+                if (lastPlayedVideo) {
+                    lastPlayedVideo.play(); // Retoma se houver erro ao iniciar
+                }
             }
         }
     });
