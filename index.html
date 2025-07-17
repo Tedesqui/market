@@ -41,7 +41,7 @@
     <a-assets>
       <video id="video_chocolate" src="videos/chocolate.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
       <video id="video_acucar" src="videos/acucar.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="video_feijao" src="videos/feijao.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="video_frutas" src="videos/feijao.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
       <video id="video_inicial" src="videos/inicio.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
     </a-assets>
 
@@ -72,15 +72,8 @@
     const statusDiv = document.getElementById('status');
     const muteButton = document.getElementById('muteButton');
     const initialVideo = document.querySelector('#video_inicial');
-    const videoHolder = document.querySelector('#video-holder a-video');
-
-    const videoFeijao = document.querySelector('#video_feijao');
-    const videoAcucar = document.querySelector('#video_acucar');
-    const videoChocolate = document.querySelector('#video_chocolate');
-
     let isMuted = true;
-    let recognition;
-    let recognizing = false;
+    let recognitionActive = false;
 
     function setMuteState(muted) {
         if (initialVideo) {
@@ -103,73 +96,6 @@
         initialVideo.muted = true;
         initialVideo.play().catch(() => {});
         setMuteState(true);
-    });
-
-    if ('webkitSpeechRecognition' in window) {
-        recognition = new webkitSpeechRecognition();
-        recognition.continuous = false;
-        recognition.lang = 'pt-BR';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-
-        recognition.onresult = (event) => {
-            const speechResult = event.results[0][0].transcript.toLowerCase();
-            console.log('Você disse:', speechResult);
-            statusDiv.style.display = 'none';
-            handleSpeechCommand(speechResult);
-        };
-
-        recognition.onerror = (event) => {
-            console.error('Erro no reconhecimento:', event.error);
-            statusDiv.style.display = 'none';
-        };
-    }
-
-    function handleSpeechCommand(command) {
-        stopAllVideos();
-        if (command.includes('feijão') || command.includes('feijao')) {
-            videoHolder.setAttribute('src', '#video_feijao');
-            videoFeijao.play();
-        } else if (command.includes('açúcar') || command.includes('acucar')) {
-            videoHolder.setAttribute('src', '#video_acucar');
-            videoAcucar.play();
-        } else if (command.includes('chocolate')) {
-            videoHolder.setAttribute('src', '#video_chocolate');
-            videoChocolate.play();
-        }
-    }
-
-    function stopAllVideos() {
-        videoFeijao.pause();
-        videoFeijao.currentTime = 0;
-        videoAcucar.pause();
-        videoAcucar.currentTime = 0;
-        videoChocolate.pause();
-        videoChocolate.currentTime = 0;
-        initialVideo.pause();
-        initialVideo.currentTime = 0;
-    }
-
-    micButton.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        micWrapper.classList.add('recording');
-        statusDiv.style.display = 'block';
-        navigator.vibrate(50);
-
-        if (!recognizing && recognition) {
-            recognition.start();
-            recognizing = true;
-        }
-    });
-
-    micButton.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        micWrapper.classList.remove('recording');
-
-        if (recognizing && recognition) {
-            recognition.stop();
-            recognizing = false;
-        }
     });
   </script>
 </body>
