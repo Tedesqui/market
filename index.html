@@ -36,18 +36,18 @@
   <a-scene 
     vr-mode-ui="enabled: false" 
     embedded 
-    arjs="sourceType: webcam; gpsMinAccuracy: 100; gpsTimeInterval: 5000;"
+    arjs="sourceType: webcam; gpsMinAccuracy: 50; gpsTimeInterval: 3000;"
   >
     <a-assets>
       <video id="video_chocolate" src="videos/chocolate.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
       <video id="video_acucar" src="videos/acucar.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="video_frutas" src="videos/frutas.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="video_frutas" src="videos/feijao.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
       <video id="video_inicial" src="videos/inicio.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
     </a-assets>
 
 <a-entity id="video-holder" position="0 1.7 -15"
   animation="property: position; to: 0 1.7 -10; dur: 1500; easing: easeOutElastic">
-  <a-video width="3" height="5" src="#video_inicial" color="#FFFFFF" autoplay loop muted></a-video>
+  <a-video width="3" height="6" src="#video_inicial" color="#FFFFFF" autoplay loop muted></a-video>
 </a-entity>
   </a-scene>
 
