@@ -15,7 +15,11 @@
     #playPauseButton{position:fixed;top:20px;left:20px;padding:10px 20px;font-size:18px;z-index:1000;background-color:rgba(0,0,0,0.55);color:white;border:none;border-radius:5px;cursor:pointer;transition:.3s}
     #playPauseButton.rotating{transform:rotate(360deg)}
     #playPauseButton:hover{transform:scale(1.05)}
-    #playPauseButton span { color: #28a745; }
+    #playPauseButton span { 
+        color: #28a745; 
+        font-size: 2em; /* Aumento de 100% */
+        vertical-align: -4px; /* Ajuste para alinhar o ícone maior */
+    }
     .mic-wrapper{position:fixed;bottom:130px;left:50%;transform:translateX(-50%);z-index:999;display:inline-flex;align-items:center;justify-content:center}
     #mic-button{background-color:#007bff;color:white;border:none;border-radius:9999px;padding:15px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:.2s}
     #mic-button:hover{background-color:#0056b3;transform:scale(1.1)}
@@ -81,7 +85,7 @@
 
 <a-entity id="video-holder" position="0 1.7 -15"
   animation="property: position; to: 0 1.7 -10; dur: 1500; easing: easeOutElastic">
-  <a-video width="6" height="6" src="#video_inicial" color="#FFFFFF"></a-video>
+  <a-video width="3" height="6" src="#video_inicial" color="#FFFFFF"></a-video>
 </a-entity>
   </a-scene>
 
