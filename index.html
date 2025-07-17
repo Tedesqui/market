@@ -12,14 +12,40 @@
 
   <style>
     body{margin:0}
-    #playPauseButton{position:fixed;top:20px;left:20px;padding:10px 20px;font-size:18px;z-index:1000;background-color:rgba(0,0,0,0.55);color:white;border:none;border-radius:5px;cursor:pointer;transition:.3s}
-    #playPauseButton.rotating{transform:rotate(360deg)}
-    #playPauseButton:hover{transform:scale(1.05)}
+    #playPauseButton{
+        position:fixed;
+        top:20px;
+        left:20px;
+        z-index:1000;
+        background-color:rgba(0,0,0,0.55);
+        color:white;
+        border:none;
+        border-radius:5px;
+        cursor:pointer;
+        transition:.3s;
+        display: flex;
+        align-items: center;
+    }
+    #playPauseButton:not(.is-paused) {
+        padding: 0 10px; /* Altura do botão Play reduzida */
+        font-size: 9px; /* Tamanho da fonte do texto Play reduzido em 50% */
+    }
+    #playPauseButton.is-paused {
+        padding: 2.5px 10px; /* Tamanho do botão Pause reduzido em 50% */
+        font-size: 9px; /* Tamanho da fonte do texto Pause reduzido em 50% */
+    }
     #playPauseButton span { 
         color: #28a745; 
-        font-size: 2em; /* Aumento de 100% */
-        vertical-align: -4px; /* Ajuste para alinhar o ícone maior */
+        line-height: 1;
     }
+    #playPauseButton:not(.is-paused) span {
+        font-size: 4em; /* Tamanho do ícone mantido (4em * 9px = 36px) */
+    }
+    #playPauseButton.is-paused span {
+        font-size: 1em; /* Ícone de Pause reduzido em 50% */
+    }
+    #playPauseButton.rotating{transform:rotate(360deg)}
+    #playPauseButton:hover{transform:scale(1.05)}
     .mic-wrapper{position:fixed;bottom:130px;left:50%;transform:translateX(-50%);z-index:999;display:inline-flex;align-items:center;justify-content:center}
     #mic-button{background-color:#007bff;color:white;border:none;border-radius:9999px;padding:15px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:.2s}
     #mic-button:hover{background-color:#0056b3;transform:scale(1.1)}
@@ -85,7 +111,7 @@
 
 <a-entity id="video-holder" position="0 1.7 -15"
   animation="property: position; to: 0 1.7 -10; dur: 1500; easing: easeOutElastic">
-  <a-video width="3" height="6" src="#video_inicial" color="#FFFFFF"></a-video>
+  <a-video width="6" height="6" src="#video_inicial" color="#FFFFFF"></a-video>
 </a-entity>
   </a-scene>
 
@@ -140,7 +166,13 @@
     }
 
     function updatePlayPauseButton() {
-        playPauseButton.innerHTML = isPlaying ? '<span>⏸</span> Pause' : '<span>▶</span> Play';
+        if (isPlaying) {
+            playPauseButton.innerHTML = '<span>⏸</span> Pause';
+            playPauseButton.classList.add('is-paused');
+        } else {
+            playPauseButton.innerHTML = '<span>▶</span> Play';
+            playPauseButton.classList.remove('is-paused');
+        }
     }
 
     playPauseButton.addEventListener('click', () => {
@@ -288,7 +320,7 @@
             try {
                 micWrapper.classList.add('recording');
                 statusDiv.style.display = 'block';
-                if(navigator.vibrate) navigator.vibrate(200);
+                if(navigator.vibrate) navigator.vibrate(50);
                 
                 recognition.start();
                 recognizing = true;
@@ -330,3 +362,4 @@
   </script>
 </body>
 </html>
+
