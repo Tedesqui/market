@@ -1,12 +1,27 @@
+Com certeza! Para transformar a cena 3D atual em uma experiência de Realidade Aumentada, precisamos fazer duas alterações principais no seu HTML:
+
+Adicionar o script do AR.js: Precisamos incluir a biblioteca AR.js no cabeçalho (<head>) para que ela possa gerenciar a câmera do dispositivo.
+
+Configurar a <a-scene>: A tag <a-scene> precisa ser instruída a usar o AR.js para criar um fundo com a câmera e rastrear o ambiente.
+
+A lógica JavaScript que você já tem para trocar os vídeos por comando de voz não precisa ser alterada, pois ela continuará funcionando perfeitamente sobre a camada de realidade aumentada.
+
+Abaixo está o código modificado. As linhas alteradas estão marcadas com `` para fácil identificação.
+
+Código Modificado para Realidade Aumentada
+HTML
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Navegação por Voz - Supermercado</title>
+  <title>Navegação por Voz - Supermercado (AR)</title>
 
   <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
   <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.0/aframe/build/aframe-ar.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -18,7 +33,7 @@
         width: 100vw;
     }
     
-    /* Estilos dos botões e outros elementos da interface (sem alterações) */
+    /* Estilos da interface (sem alterações) */
     #muteButton, .mic-wrapper, #status, #footerSocial {
       position: fixed;
       z-index: 1000;
@@ -45,7 +60,11 @@
 <body style="margin: 0; overflow: hidden;">
   <button id="muteButton">🔇 Ativar Som</button>
 
-  <a-scene vr-mode-ui="enabled: false">
+  <a-scene
+    vr-mode-ui="enabled: false"
+    renderer="logarithmicDepthBuffer: true;"
+    arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;">
+
     <a-assets>
       <video id="video_chocolate" src="videos/chocolate.mp4" playsinline webkit-playsinline loop crossOrigin="anonymous"></video>
       <video id="video_acucar" src="videos/acucar.mp4" playsinline webkit-playsinline loop crossOrigin="anonymous"></video>
@@ -53,20 +72,22 @@
       <video id="video_inicial" src="videos/inicio.mp4" playsinline webkit-playsinline loop crossOrigin="anonymous"></video>
     </a-assets>
 
+    <a-light type="ambient" color="#FFF" intensity="1"></a-light>
+
     <a-entity id="container-inicial" position="0 1.5 -5">
-      <a-video src="#video_inicial" width="3.2" height="1.8" look-at="[camera]" autoplay loop muted></a-video>
+      <a-video src="#video_inicial" width="3" height="3" look-at="[camera]" autoplay loop muted></a-video>
     </a-entity>
 
     <a-entity id="container-chocolate" position="-4 1.5 -6" visible="false">
-      <a-video src="#video_chocolate" width="3.2" height="1.8" look-at="[camera]" loop></a-video>
+      <a-video src="#video_chocolate" width="3" height="3" look-at="[camera]" loop></a-video>
     </a-entity>
 
     <a-entity id="container-acucar" position="0 1.5 -6" visible="false">
-      <a-video src="#video_acucar" width="3.2" height="1.8" look-at="[camera]" loop></a-video>
+      <a-video src="#video_acucar" width="3" height="3" look-at="[camera]" loop></a-video>
     </a-entity>
     
     <a-entity id="container-feijao" position="4 1.5 -6" visible="false">
-      <a-video src="#video_feijao" width="3.2" height="1.8" look-at="[camera]" loop></a-video>
+      <a-video src="#video_feijao" width="3" height="3" look-at="[camera]" loop></a-video>
     </a-entity>
 
     <a-entity camera></a-entity>
@@ -92,7 +113,6 @@
     let isMuted = true;
     let recognitionActive = false;
 
-    // MODIFICADO: Mapeia palavras-chave para os IDs dos containers
     const productContainers = {
       'chocolate': '#container-chocolate',
       'açúcar': '#container-acucar',
@@ -100,7 +120,6 @@
     };
     const allContainers = ['#container-inicial', ...Object.values(productContainers)];
     
-    // MODIFICADO: Aplica o estado de mudo a TODOS os vídeos
     function setMuteState(muted) {
       document.querySelectorAll('a-assets video').forEach(videoEl => {
         videoEl.muted = muted;
@@ -116,18 +135,47 @@
       recognition.continuous = false;
       recognition.interimResults = false;
 
-      const startRecognition = () => { /* ...código original... */ };
-      const stopRecognition = () => { /* ...código original... */ };
+      const startRecognition = () => {
+        if (recognitionActive) return;
+        try {
+            micWrapper.classList.add('recording');
+            statusDiv.textContent = "Ouvindo...";
+            statusDiv.style.display = 'block';
+            recognition.start();
+            recognitionActive = true;
+        } catch(e) {
+            console.error("Erro ao iniciar reconhecimento de voz:", e);
+            micWrapper.classList.remove('recording');
+            statusDiv.style.display = 'none';
+        }
+      };
+      
+      const stopRecognition = () => {
+        if (!recognitionActive) return;
+        micWrapper.classList.remove('recording');
+        statusDiv.style.display = 'none';
+        recognition.stop();
+        recognitionActive = false;
+      };
       
       micButton.addEventListener('mousedown', startRecognition);
       micButton.addEventListener('mouseup', stopRecognition);
       micButton.addEventListener('mouseleave', stopRecognition);
       micButton.addEventListener('touchstart', (e) => { e.preventDefault(); startRecognition(); });
       micButton.addEventListener('touchend', (e) => { e.preventDefault(); stopRecognition(); });
-      recognition.onend = () => { /* ...código original... */ };
-      recognition.onerror = (event) => { /* ...código original... */ };
 
-      // MODIFICADO: Lógica para mostrar/esconder containers
+      recognition.onend = () => {
+        if (recognitionActive) {
+            micWrapper.classList.remove('recording');
+            statusDiv.style.display = 'none';
+            recognitionActive = false;
+        }
+      };
+
+      recognition.onerror = (event) => {
+        statusDiv.textContent = `Erro: ${event.error}`;
+      };
+
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript.toLowerCase();
         statusDiv.textContent = `Você disse: "${transcript}"`;
@@ -137,16 +185,13 @@
           if (transcript.includes(keyword)) {
             const targetContainerId = productContainers[keyword];
             
-            // Esconde todos os containers
             allContainers.forEach(id => {
               document.querySelector(id).setAttribute('visible', 'false');
             });
             
-            // Mostra o container correto
             const targetContainer = document.querySelector(targetContainerId);
             targetContainer.setAttribute('visible', 'true');
             
-            // Toca o vídeo dentro do container que se tornou visível
             const videoToPlay = targetContainer.querySelector('a-video').components.material.material.map.image;
             if (videoToPlay) {
                 videoToPlay.play();
@@ -176,7 +221,6 @@
     });
     
     document.querySelector('a-scene').addEventListener('loaded', () => {
-      // Garante que o estado inicial de mudo seja aplicado a todos
       setMuteState(true); 
       document.querySelector('#video_inicial').play().catch(e => console.error("Autoplay bloqueado:", e));
     });
@@ -184,4 +228,3 @@
   </script>
 </body>
 </html>
-
