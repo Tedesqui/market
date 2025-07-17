@@ -33,7 +33,7 @@
 </head>
 
 <body style="margin: 0; overflow: hidden;">
-  <button id="muteButton">🔊 Mudo</button>
+  <button id="muteButton">🔇 Ativar Som</button>
 
   <a-scene 
     vr-mode-ui="enabled: false" 
@@ -51,7 +51,7 @@
 
 <a-entity id="video-holder" position="0 1.7 -15"
   animation="property: position; to: 0 1.7 -10; dur: 1500; easing: easeOutElastic">
-  <a-video width="3" height="6" src="#video_inicial" color="#FFFFFF" autoplay loop></a-video>
+  <a-video width="3" height="6" src="#video_inicial" color="#FFFFFF" autoplay loop muted></a-video>
 </a-entity>
   </a-scene>
 
@@ -87,34 +87,39 @@
     const videoOfertas = document.querySelector('#video_ofertas');
     const allVideos = [initialVideo, videoFeijao, videoAcucar, videoChocolate, videoOfertas];
 
-    let isMuted = false; // Começa com som ativado
+    let isMuted = true;
     let recognition;
     let recognizing = false;
-    let lastPlayedVideo = null; 
-    let newVideoPlayed = false; 
+    let lastPlayedVideo = null;
+    let newVideoPlayed = false;
 
     function setMuteState(muted) {
         isMuted = muted;
         allVideos.forEach(video => {
             video.muted = isMuted;
         });
-        muteButton.textContent = isMuted ? '🔇 Ativar Som' : '🔊 Mudo';
+        muteButton.textContent = muted ? '🔇 Ativar Som' : '🔊 Mudo';
     }
 
     muteButton.addEventListener('click', () => {
+        // Altera o estado de mudo
         setMuteState(!isMuted);
+
+        // Encontra o vídeo atual e o reproduz
+        const currentVideoSrcId = videoHolder.getAttribute('src').substring(1);
+        const currentVideo = document.getElementById(currentVideoSrcId);
+        if (currentVideo) {
+            currentVideo.play().catch(e => console.error("Play failed", e));
+        }
+
         muteButton.classList.add('rotating');
         setTimeout(() => muteButton.classList.remove('rotating'), 300);
     });
 
     document.querySelector('a-scene').addEventListener('loaded', () => {
-        // Tenta iniciar o vídeo com som.
-        setMuteState(false);
-        initialVideo.play().catch(e => {
-            console.error("Autoplay com som foi bloqueado pelo navegador. Interação do usuário é necessária.", e);
-            // Fallback para mutado se o autoplay com som falhar.
-            setMuteState(true);
-        });
+        initialVideo.muted = true;
+        initialVideo.play().catch(() => {});
+        setMuteState(true);
     });
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -149,7 +154,6 @@
             statusDiv.style.display = 'none';
 
             if (!newVideoPlayed && lastPlayedVideo) {
-                lastPlayedVideo.muted = isMuted; // Garante que o estado de som seja respeitado
                 lastPlayedVideo.play();
             }
             lastPlayedVideo = null;
@@ -165,26 +169,24 @@
         videoHolder.setAttribute('width', '3');
         videoHolder.setAttribute('height', '6');
 
-        const playVideoWithState = (videoElement) => {
-            videoElement.muted = isMuted;
-            videoElement.play();
-            videoTriggered = true;
-        };
-
         if (command.includes('feijão') || command.includes('feijao')) {
             videoHolder.setAttribute('src', '#video_feijao');
-            playVideoWithState(videoFeijao);
+            videoFeijao.play();
+            videoTriggered = true;
         } else if (command.includes('açúcar') || command.includes('acucar')) {
             videoHolder.setAttribute('src', '#video_acucar');
-            playVideoWithState(videoAcucar);
+            videoAcucar.play();
+            videoTriggered = true;
         } else if (command.includes('chocolate')) {
             videoHolder.setAttribute('src', '#video_chocolate');
-            playVideoWithState(videoChocolate);
+            videoChocolate.play();
+            videoTriggered = true;
         } else if (command.includes('ofertas') || command.includes('oferta')) {
             videoHolder.setAttribute('width', '6');
             videoHolder.setAttribute('height', '3.375');
             videoHolder.setAttribute('src', '#video_ofertas');
-            playVideoWithState(videoOfertas);
+            videoOfertas.play();
+            videoTriggered = true;
         }
         
         if (videoTriggered) {
@@ -215,7 +217,7 @@
             try {
                 micWrapper.classList.add('recording');
                 statusDiv.style.display = 'block';
-                if(navigator.vibrate) navigator.vibrate(50);
+                if(navigator.vibrate) navigator.vibrate(100);
                 
                 recognition.start();
                 recognizing = true;
