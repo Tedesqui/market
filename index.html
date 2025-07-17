@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <title>𝐃𝐎𝐌 𝐀𝐓𝐀𝐂𝐀𝐃𝐈𝐒𝐓𝐀 (𝐈𝐀)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.0/aframe/build/aframe-ar-nft.js"></script>
@@ -39,10 +40,10 @@
     arjs="sourceType: webcam; gpsMinAccuracy: 50; gpsTimeInterval: 3000;"
   >
     <a-assets>
-      <video id="video_chocolate" src="videos/chocolate.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="video_acucar" src="videos/acucar.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="video_feijao" src="videos/feijao.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="video_inicial" src="videos/inicio.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="video_chocolate" src="videos/chocolate.mp4?v=1721235653639" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="video_acucar" src="videos/acucar.mp4?v=1721235651598" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="video_feijao" src="videos/feijao.mp4?v=1721235655938" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="video_inicial" src="videos/inicio.mp4?v=1721235659837" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
     </a-assets>
 
 <a-entity id="video-holder" position="0 1.7 -15"
@@ -86,6 +87,7 @@
         if (initialVideo) {
             initialVideo.muted = muted;
             if (!muted) {
+                // Play requires a user gesture, this might not always work automatically
                 initialVideo.play().catch(() => {});
             }
         }
@@ -105,8 +107,10 @@
         setMuteState(true);
     });
 
-    if ('webkitSpeechRecognition' in window) {
-        recognition = new webkitSpeechRecognition();
+    // Use the standardized SpeechRecognition object, with webkit prefix as a fallback for browser compatibility.
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
         recognition.continuous = false;
         recognition.lang = 'pt-BR';
         recognition.interimResults = false;
@@ -115,14 +119,23 @@
         recognition.onresult = (event) => {
             const speechResult = event.results[0][0].transcript.toLowerCase();
             console.log('Você disse:', speechResult);
-            statusDiv.style.display = 'none';
             handleSpeechCommand(speechResult);
         };
 
         recognition.onerror = (event) => {
             console.error('Erro no reconhecimento:', event.error);
+        };
+
+        // Add an onend handler to robustly manage the recognition state.
+        // This is crucial for mobile browsers like Safari on iOS.
+        recognition.onend = () => {
+            recognizing = false;
+            micWrapper.classList.remove('recording');
             statusDiv.style.display = 'none';
         };
+    } else {
+        console.error("Speech Recognition API not supported in this browser.");
+        micButton.style.display = 'none'; // Hide button if not supported
     }
 
     function handleSpeechCommand(command) {
@@ -150,25 +163,32 @@
         initialVideo.currentTime = 0;
     }
 
+    // Event listener for starting recognition
     micButton.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        micWrapper.classList.add('recording');
-        statusDiv.style.display = 'block';
-        navigator.vibrate(50);
-
+        e.preventDefault(); // Prevents default browser actions like scrolling
         if (!recognizing && recognition) {
-            recognition.start();
-            recognizing = true;
+            try {
+                micWrapper.classList.add('recording');
+                statusDiv.style.display = 'block';
+                if(navigator.vibrate) navigator.vibrate(50);
+                
+                recognition.start();
+                recognizing = true;
+            } catch(err) {
+                console.error("Erro ao iniciar o reconhecimento:", err);
+                // Reset UI in case of error
+                micWrapper.classList.remove('recording');
+                statusDiv.style.display = 'none';
+            }
         }
     });
 
+    // Event listener for stopping recognition
     micButton.addEventListener('touchend', (e) => {
         e.preventDefault();
-        micWrapper.classList.remove('recording');
-
         if (recognizing && recognition) {
             recognition.stop();
-            recognizing = false;
+            // The 'onend' event will now handle setting 'recognizing' to false and updating the UI.
         }
     });
   </script>
