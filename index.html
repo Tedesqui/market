@@ -9,7 +9,25 @@
   <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
   <script src="https://unpkg.com/aframe-gps-entity-place@1.8.0/dist/aframe-gps-entity-place.min.js"></script>
 
-  <style>body{margin:0}#muteButton{position:fixed;top:20px;left:20px;padding:10px 20px;font-size:18px;z-index:1000;background-color:rgba(0,0,0,0.7);color:white;border:none;border-radius:5px;cursor:pointer;transition:.3s}#muteButton.rotating{transform:rotate(360deg)}#muteButton:hover{background-color:rgba(0,0,0,0.9);transform:scale(1.05)}.mic-wrapper{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);z-index:999;display:inline-flex;align-items:center;justify-content:center}#mic-button{background-color:#007bff;color:white;border:none;border-radius:9999px;padding:15px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:.2s}#mic-button:hover{background-color:#0056b3;transform:scale(1.1)}.mic-wrapper.recording #mic-button{transform:scale(1.7);background-color:#28a745!important}#mic-button svg{width:28px;height:28px;display:block}#status{position:fixed;bottom:180px;left:50%;transform:translateX(-50%);padding:10px 20px;background-color:rgba(0,0,0,0.7);color:white;border-radius:10px;z-index:998;font-size:16px;display:none}#footerSocial{position:fixed;bottom:0;left:0;right:0;padding:20px 0;display:flex;justify-content:center;gap:40px;z-index:999;background-color:rgba(0,0,0,0.1);box-shadow:0 0 19.5px rgba(0,0,0,.47)}#footerSocial a{display:flex;align-items:center;justify-content:center;width:34.56px;height:34.56px;text-decoration:none}#footerSocial svg{width:34.56px;height:34.56px;transition:.3s}#footerSocial a:hover svg{transform:scale(1.1)}#footerSocial .facebook svg{fill:#00008B}#footerSocial .instagram svg{fill:#833AB4}#footerSocial .whatsapp svg{fill:#25D366}</style>
+  <style>
+    body{margin:0}
+    #muteButton{position:fixed;top:20px;left:20px;padding:10px 20px;font-size:18px;z-index:1000;background-color:rgba(0,0,0,0.7);color:white;border:none;border-radius:5px;cursor:pointer;transition:.3s}
+    #muteButton.rotating{transform:rotate(360deg)}
+    #muteButton:hover{background-color:rgba(0,0,0,0.9);transform:scale(1.05)}
+    .mic-wrapper{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);z-index:999;display:inline-flex;align-items:center;justify-content:center}
+    #mic-button{background-color:#007bff;color:white;border:none;border-radius:9999px;padding:15px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:.2s}
+    #mic-button:hover{background-color:#0056b3;transform:scale(1.1)}
+    .mic-wrapper.recording #mic-button{transform:scale(1.7);background-color:#28a745!important}
+    #mic-button svg{width:28px;height:28px;display:block}
+    #status{position:fixed;bottom:180px;left:50%;transform:translateX(-50%);padding:10px 20px;background-color:rgba(0,0,0,0.7);color:white;border-radius:10px;z-index:998;font-size:16px;display:none}
+    #footerSocial{position:fixed;bottom:0;left:0;right:0;padding:20px 0;display:flex;justify-content:center;gap:40px;z-index:999;background-color:rgba(0,0,0,0.1);box-shadow:0 0 19.5px rgba(0,0,0,.47)}
+    #footerSocial a{display:flex;align-items:center;justify-content:center;width:34.56px;height:34.56px;text-decoration:none}
+    #footerSocial svg{width:34.56px;height:34.56px;transition:.3s}
+    #footerSocial a:hover svg{transform:scale(1.1)}
+    #footerSocial .facebook svg{fill:#00008B}
+    #footerSocial .instagram svg{fill:#833AB4}
+    #footerSocial .whatsapp svg{fill:#25D366}
+  </style>
 </head>
 
 <body style="margin: 0; overflow: hidden;">
@@ -27,9 +45,9 @@
       <video id="video_inicial" src="videos/inicio.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
     </a-assets>
 
-    <a-entity id="video-holder" position="0 1.7 -10"
-      animation="property: position; to: 0 1.7 -8; dur: 1500; easing: easeOutElastic">
-      <a-video width="3" height="3" src="#video_inicial" look-at="[camera]" color="#FFFFFF" autoplay loop muted></a-video>
+    <a-entity id="video-holder" position="0 1.7 -14"
+      animation="property: position; to: 0 1.7 -10; dur: 1500; easing: easeOutElastic">
+      <a-video width="4" height="4" src="#video_inicial" look-at="[camera]" color="#FFFFFF" autoplay loop muted></a-video>
     </a-entity>
   </a-scene>
 
@@ -52,104 +70,29 @@
     const micWrapper = document.getElementById('mic-wrapper');
     const micButton = document.getElementById('mic-button');
     const statusDiv = document.getElementById('status');
-    const mainVideo = document.getElementById('main-video');
     const muteButton = document.getElementById('muteButton');
+    const initialVideo = document.querySelector('#video_inicial');
     let isMuted = true;
     let recognitionActive = false;
 
-    const productVideos = {
-      'chocolate': '#video_chocolate',
-      'açúcar': '#video_acucar',
-      'frutas': '#video_frutas'
-    };
-    
     function setMuteState(muted) {
-        const videoMaterial = mainVideo.components.material;
-        if (videoMaterial && videoMaterial.material.map && videoMaterial.material.map.image) {
-            videoMaterial.material.map.image.muted = muted;
+        if (initialVideo) {
+            initialVideo.muted = muted;
+            if (!muted) {
+                initialVideo.play().catch(() => {});
+            }
         }
         isMuted = muted;
         muteButton.textContent = muted ? '🔇 Ativar Som' : '🔊 Mudo';
     }
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'pt-BR';
-      recognition.continuous = false;
-      recognition.interimResults = false;
-
-      const startRecognition = () => {
-        if (recognitionActive) return;
-        try {
-            micWrapper.classList.add('recording');
-            statusDiv.textContent = "Ouvindo...";
-            statusDiv.style.display = 'block';
-            recognition.start();
-            recognitionActive = true;
-        } catch(e) {
-            micWrapper.classList.remove('recording');
-            statusDiv.style.display = 'none';
-        }
-      };
-      
-      const stopRecognition = () => {
-        if (!recognitionActive) return;
-        micWrapper.classList.remove('recording');
-        statusDiv.style.display = 'none';
-        recognition.stop();
-        recognitionActive = false;
-      };
-      
-      micButton.addEventListener('mousedown', startRecognition);
-      micButton.addEventListener('mouseup', stopRecognition);
-      micButton.addEventListener('mouseleave', stopRecognition);
-      micButton.addEventListener('touchstart', (e) => { e.preventDefault(); startRecognition(); });
-      micButton.addEventListener('touchend', (e) => { e.preventDefault(); stopRecognition(); });
-
-      recognition.onend = () => {
-        if (recognitionActive) {
-            micWrapper.classList.remove('recording');
-            statusDiv.style.display = 'none';
-            recognitionActive = false;
-        }
-      };
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript.toLowerCase();
-        statusDiv.textContent = `Você disse: "${transcript}"`;
-
-        let foundProduct = false;
-        for (const keyword in productVideos) {
-          if (transcript.includes(keyword)) {
-            const videoSrc = productVideos[keyword];
-            mainVideo.setAttribute('src', videoSrc);
-            const newVideoEl = document.querySelector(videoSrc);
-            newVideoEl.muted = isMuted;
-            newVideoEl.play();
-            statusDiv.textContent = `Mostrando o corredor de ${keyword}!`;
-            foundProduct = true;
-            break;
-          }
-        }
-        if (!foundProduct) {
-          statusDiv.textContent = `Produto não encontrado. Tente "chocolate", "açúcar" ou "frutas".`;
-        }
-      };
-    } else {
-      micWrapper.style.display = 'none';
-      statusDiv.textContent = "Seu navegador não suporta esta funcionalidade.";
-      statusDiv.style.display = 'block';
-    }
-
     muteButton.addEventListener('click', () => {
-      setMuteState(!isMuted);
-      muteButton.classList.add('rotating');
-      setTimeout(() => muteButton.classList.remove('rotating'), 300);
+        setMuteState(!isMuted);
+        muteButton.classList.add('rotating');
+        setTimeout(() => muteButton.classList.remove('rotating'), 300);
     });
 
     document.querySelector('a-scene').addEventListener('loaded', () => {
-        const initialVideo = document.querySelector('#video_inicial');
         initialVideo.muted = true;
         initialVideo.play().catch(() => {});
         setMuteState(true);
