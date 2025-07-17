@@ -21,6 +21,7 @@
     .mic-wrapper.recording #mic-button{transform:scale(1.7);background-color:#28a745!important}
     #mic-button svg{width:28px;height:28px;display:block}
     #status{position:fixed;bottom:180px;left:50%;transform:translateX(-50%);padding:10px 20px;background-color:rgba(0,0,0,0.7);color:white;border-radius:10px;z-index:998;font-size:16px;display:none}
+    #recognized-text{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);padding:8px 15px;background-color:rgba(0,0,0,0.75);color:white;border-radius:8px;z-index:998;font-size:16px;display:none;text-align:center;max-width:90%}
     #footerSocial{position:fixed;bottom:0;left:0;right:0;padding:20px 0;display:flex;justify-content:center;gap:40px;z-index:999;background-color:rgba(0,0,0,0.1);box-shadow:0 0 19.5px rgba(0,0,0,.47)}
     #footerSocial a{display:flex;align-items:center;justify-content:center;width:34.56px;height:34.56px;text-decoration:none}
     #footerSocial svg{width:34.56px;height:34.56px;transition:.3s}
@@ -44,6 +45,8 @@
       <video id="video_acucar" src="videos/acucar.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
       <video id="video_feijao" src="videos/feijao.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
       <video id="video_inicial" src="videos/inicio.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <!-- Novo vídeo de ofertas -->
+      <video id="video_ofertas" src="videos/ofertas.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
     </a-assets>
 
 <a-entity id="video-holder" position="0 1.7 -15"
@@ -60,6 +63,8 @@
           </svg>
       </button>
   </div>
+  <!-- Elemento para exibir o texto reconhecido -->
+  <div id="recognized-text"></div>
 
   <div id="footerSocial">
     <a href="https://www.facebook.com/domatacadista/" target="_blank" class="facebook" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M22 12a10 10 0 1 0-11.5 9.87v-6.98h-3v-2.89h3v-2.2c0-3 1.79-4.66 4.53-4.66 1.31 0 2.68.24 2.68.24v3h-1.54c-1.52 0-1.99.95-1.99 1.92v2.7h3.4l-.54 2.89h-2.86v6.98A10 10 0 0 0 22 12"/></svg></a>
@@ -74,10 +79,12 @@
     const muteButton = document.getElementById('muteButton');
     const initialVideo = document.querySelector('#video_inicial');
     const videoHolder = document.querySelector('#video-holder a-video');
+    const recognizedTextDiv = document.getElementById('recognized-text');
 
     const videoFeijao = document.querySelector('#video_feijao');
     const videoAcucar = document.querySelector('#video_acucar');
     const videoChocolate = document.querySelector('#video_chocolate');
+    const videoOfertas = document.querySelector('#video_ofertas');
 
     let isMuted = true;
     let recognition;
@@ -87,7 +94,6 @@
         if (initialVideo) {
             initialVideo.muted = muted;
             if (!muted) {
-                // Play requires a user gesture, this might not always work automatically
                 initialVideo.play().catch(() => {});
             }
         }
@@ -107,7 +113,6 @@
         setMuteState(true);
     });
 
-    // Use the standardized SpeechRecognition object, with webkit prefix as a fallback for browser compatibility.
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
         recognition = new SpeechRecognition();
@@ -117,17 +122,25 @@
         recognition.maxAlternatives = 1;
 
         recognition.onresult = (event) => {
-            const speechResult = event.results[0][0].transcript.toLowerCase();
-            console.log('Você disse:', speechResult);
-            handleSpeechCommand(speechResult);
+            const speechResult = event.results[0][0].transcript;
+            console.log('Você disse:', speechResult.toLowerCase());
+            
+            // Exibe o texto reconhecido
+            recognizedTextDiv.textContent = `"${speechResult}"`;
+            recognizedTextDiv.style.display = 'block';
+
+            // Esconde o texto após 3 segundos
+            setTimeout(() => {
+                recognizedTextDiv.style.display = 'none';
+            }, 3000);
+
+            handleSpeechCommand(speechResult.toLowerCase());
         };
 
         recognition.onerror = (event) => {
             console.error('Erro no reconhecimento:', event.error);
         };
 
-        // Add an onend handler to robustly manage the recognition state.
-        // This is crucial for mobile browsers like Safari on iOS.
         recognition.onend = () => {
             recognizing = false;
             micWrapper.classList.remove('recording');
@@ -135,11 +148,15 @@
         };
     } else {
         console.error("Speech Recognition API not supported in this browser.");
-        micButton.style.display = 'none'; // Hide button if not supported
+        micButton.style.display = 'none';
     }
 
     function handleSpeechCommand(command) {
         stopAllVideos();
+        // Redefine as dimensões para o padrão (vertical)
+        videoHolder.setAttribute('width', '3');
+        videoHolder.setAttribute('height', '6');
+
         if (command.includes('feijão') || command.includes('feijao')) {
             videoHolder.setAttribute('src', '#video_feijao');
             videoFeijao.play();
@@ -149,6 +166,12 @@
         } else if (command.includes('chocolate')) {
             videoHolder.setAttribute('src', '#video_chocolate');
             videoChocolate.play();
+        } else if (command.includes('ofertas')) {
+            // Altera as dimensões para o vídeo de ofertas (horizontal)
+            videoHolder.setAttribute('width', '6');
+            videoHolder.setAttribute('height', '3.375'); // Proporção 16:9
+            videoHolder.setAttribute('src', '#video_ofertas');
+            videoOfertas.play();
         }
     }
 
@@ -161,11 +184,25 @@
         videoChocolate.currentTime = 0;
         initialVideo.pause();
         initialVideo.currentTime = 0;
+        videoOfertas.pause(); // Garante que o vídeo de ofertas também pare
+        videoOfertas.currentTime = 0;
+    }
+    
+    // Nova função para pausar todos os vídeos sem resetar o tempo
+    function pauseAllVideos() {
+        videoFeijao.pause();
+        videoAcucar.pause();
+        videoChocolate.pause();
+        initialVideo.pause();
+        videoOfertas.pause();
     }
 
-    // Event listener for starting recognition
     micButton.addEventListener('touchstart', (e) => {
-        e.preventDefault(); // Prevents default browser actions like scrolling
+        e.preventDefault();
+        
+        // Pausa qualquer vídeo que esteja tocando
+        pauseAllVideos();
+
         if (!recognizing && recognition) {
             try {
                 micWrapper.classList.add('recording');
@@ -176,19 +213,16 @@
                 recognizing = true;
             } catch(err) {
                 console.error("Erro ao iniciar o reconhecimento:", err);
-                // Reset UI in case of error
                 micWrapper.classList.remove('recording');
                 statusDiv.style.display = 'none';
             }
         }
     });
 
-    // Event listener for stopping recognition
     micButton.addEventListener('touchend', (e) => {
         e.preventDefault();
         if (recognizing && recognition) {
             recognition.stop();
-            // The 'onend' event will now handle setting 'recognizing' to false and updating the UI.
         }
     });
   </script>
