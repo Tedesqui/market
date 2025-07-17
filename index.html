@@ -41,12 +41,12 @@
     arjs="sourceType: webcam; gpsMinAccuracy: 50; gpsTimeInterval: 3000;"
   >
     <a-assets>
-      <video id="video_chocolate" src="videos/chocolate.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="video_acucar" src="videos/acucar.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="video_feijao" src="videos/feijao.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
-      <video id="video_inicial" src="videos/inicio.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="video_chocolate" src="videos/chocolate.mp4?v=1721235653639" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="video_acucar" src="videos/acucar.mp4?v=1721235651598" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="video_feijao" src="videos/feijao.mp4?v=1721235655938" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="video_inicial" src="videos/inicio.mp4?v=1721235659837" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
       <!-- Novo vídeo de ofertas -->
-      <video id="video_ofertas" src="videos/ofertas.mp4" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
+      <video id="video_ofertas" src="videos/ofertas.mp4?v=1721258162331" playsinline webkit-playsinline loop crossorigin="anonymous"></video>
     </a-assets>
 
 <a-entity id="video-holder" position="0 1.7 -15"
@@ -90,22 +90,28 @@
     let isMuted = true;
     let recognition;
     let recognizing = false;
-    let lastPlayedVideo = null; // Armazena o vídeo que estava tocando
-    let newVideoPlayed = false; // Flag para saber se um novo vídeo foi acionado
+    let lastPlayedVideo = null;
+    let newVideoPlayed = false;
 
     function setMuteState(muted) {
-        if (initialVideo) {
-            initialVideo.muted = muted;
-            if (!muted) {
-                initialVideo.play().catch(() => {});
-            }
-        }
         isMuted = muted;
+        allVideos.forEach(video => {
+            video.muted = isMuted;
+        });
         muteButton.textContent = muted ? '🔇 Ativar Som' : '🔊 Mudo';
     }
 
     muteButton.addEventListener('click', () => {
+        // Altera o estado de mudo
         setMuteState(!isMuted);
+
+        // Encontra o vídeo atual e o reproduz
+        const currentVideoSrcId = videoHolder.getAttribute('src').substring(1);
+        const currentVideo = document.getElementById(currentVideoSrcId);
+        if (currentVideo) {
+            currentVideo.play().catch(e => console.error("Play failed", e));
+        }
+
         muteButton.classList.add('rotating');
         setTimeout(() => muteButton.classList.remove('rotating'), 300);
     });
@@ -147,11 +153,10 @@
             micWrapper.classList.remove('recording');
             statusDiv.style.display = 'none';
 
-            // Se nenhum comando de vídeo foi executado, retoma o vídeo anterior
             if (!newVideoPlayed && lastPlayedVideo) {
                 lastPlayedVideo.play();
             }
-            lastPlayedVideo = null; // Limpa a variável para a próxima interação
+            lastPlayedVideo = null;
         };
     } else {
         console.error("Speech Recognition API not supported in this browser.");
@@ -203,16 +208,16 @@
     micButton.addEventListener('touchstart', (e) => {
         e.preventDefault();
         
-        newVideoPlayed = false; // Reseta a flag
-        lastPlayedVideo = allVideos.find(video => !video.paused) || null; // Encontra o vídeo que está tocando
+        newVideoPlayed = false;
+        lastPlayedVideo = allVideos.find(video => !video.paused) || null;
         
-        pauseAllVideos(); // Pausa todos os vídeos
+        pauseAllVideos();
 
         if (!recognizing && recognition) {
             try {
                 micWrapper.classList.add('recording');
                 statusDiv.style.display = 'block';
-                if(navigator.vibrate) navigator.vibrate(100);
+                if(navigator.vibrate) navigator.vibrate(50);
                 
                 recognition.start();
                 recognizing = true;
@@ -221,7 +226,7 @@
                 micWrapper.classList.remove('recording');
                 statusDiv.style.display = 'none';
                 if (lastPlayedVideo) {
-                    lastPlayedVideo.play(); // Retoma se houver erro ao iniciar
+                    lastPlayedVideo.play();
                 }
             }
         }
