@@ -33,7 +33,7 @@
 </head>
 
 <body style="margin: 0; overflow: hidden;">
-  <button id="muteButton">🔇 Ativar Som</button>
+  <button id="muteButton">PLAY</button>
 
   <a-scene 
     vr-mode-ui="enabled: false" 
@@ -51,7 +51,7 @@
 
 <a-entity id="video-holder" position="0 1.7 -15"
   animation="property: position; to: 0 1.7 -10; dur: 1500; easing: easeOutElastic">
-  <a-video width="3" height="6" src="#video_inicial" color="#FFFFFF" autoplay loop muted></a-video>
+  <a-video width="3" height="6" src="#video_inicial" color="#FFFFFF" loop muted></a-video>
 </a-entity>
   </a-scene>
 
@@ -88,32 +88,38 @@
     const allVideos = [initialVideo, videoFeijao, videoAcucar, videoChocolate, videoOfertas];
 
     let isMuted = true;
+    let firstPlay = true; // Controla o primeiro clique no botão PLAY
     let recognition;
     let recognizing = false;
-    let lastPlayedVideo = null; // Armazena o vídeo que estava tocando
-    let newVideoPlayed = false; // Flag para saber se um novo vídeo foi acionado
+    let lastPlayedVideo = null; 
+    let newVideoPlayed = false; 
 
     function setMuteState(muted) {
-        if (initialVideo) {
-            initialVideo.muted = muted;
-            if (!muted) {
-                initialVideo.play().catch(() => {});
-            }
-        }
         isMuted = muted;
-        muteButton.textContent = muted ? '🔇 Ativar Som' : '🔊 Mudo';
+        allVideos.forEach(video => {
+            video.muted = isMuted;
+        });
+        muteButton.textContent = isMuted ? '🔇 Ativar Som' : '🔊 Mudo';
     }
 
     muteButton.addEventListener('click', () => {
-        setMuteState(!isMuted);
+        if (firstPlay) {
+            initialVideo.muted = false;
+            initialVideo.play().catch(e => console.error("Initial play failed", e));
+            isMuted = false;
+            firstPlay = false;
+            muteButton.textContent = '🔊 Mudo';
+        } else {
+            setMuteState(!isMuted);
+        }
         muteButton.classList.add('rotating');
         setTimeout(() => muteButton.classList.remove('rotating'), 300);
     });
 
     document.querySelector('a-scene').addEventListener('loaded', () => {
-        initialVideo.muted = true;
-        initialVideo.play().catch(() => {});
-        setMuteState(true);
+        // Garante que os vídeos comecem tecnicamente "mutados" e pausados.
+        isMuted = true;
+        allVideos.forEach(v => v.muted = true);
     });
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -147,11 +153,11 @@
             micWrapper.classList.remove('recording');
             statusDiv.style.display = 'none';
 
-            // Se nenhum comando de vídeo foi executado, retoma o vídeo anterior
             if (!newVideoPlayed && lastPlayedVideo) {
+                lastPlayedVideo.muted = isMuted; // Garante que o estado de som seja respeitado
                 lastPlayedVideo.play();
             }
-            lastPlayedVideo = null; // Limpa a variável para a próxima interação
+            lastPlayedVideo = null;
         };
     } else {
         console.error("Speech Recognition API not supported in this browser.");
@@ -164,24 +170,26 @@
         videoHolder.setAttribute('width', '3');
         videoHolder.setAttribute('height', '6');
 
+        const playVideoWithState = (videoElement) => {
+            videoElement.muted = isMuted;
+            videoElement.play();
+            videoTriggered = true;
+        };
+
         if (command.includes('feijão') || command.includes('feijao')) {
             videoHolder.setAttribute('src', '#video_feijao');
-            videoFeijao.play();
-            videoTriggered = true;
+            playVideoWithState(videoFeijao);
         } else if (command.includes('açúcar') || command.includes('acucar')) {
             videoHolder.setAttribute('src', '#video_acucar');
-            videoAcucar.play();
-            videoTriggered = true;
+            playVideoWithState(videoAcucar);
         } else if (command.includes('chocolate')) {
             videoHolder.setAttribute('src', '#video_chocolate');
-            videoChocolate.play();
-            videoTriggered = true;
+            playVideoWithState(videoChocolate);
         } else if (command.includes('ofertas') || command.includes('oferta')) {
             videoHolder.setAttribute('width', '6');
             videoHolder.setAttribute('height', '3.375');
             videoHolder.setAttribute('src', '#video_ofertas');
-            videoOfertas.play();
-            videoTriggered = true;
+            playVideoWithState(videoOfertas);
         }
         
         if (videoTriggered) {
@@ -203,16 +211,16 @@
     micButton.addEventListener('touchstart', (e) => {
         e.preventDefault();
         
-        newVideoPlayed = false; // Reseta a flag
-        lastPlayedVideo = allVideos.find(video => !video.paused) || null; // Encontra o vídeo que está tocando
+        newVideoPlayed = false;
+        lastPlayedVideo = allVideos.find(video => !video.paused) || null;
         
-        pauseAllVideos(); // Pausa todos os vídeos
+        pauseAllVideos();
 
         if (!recognizing && recognition) {
             try {
                 micWrapper.classList.add('recording');
                 statusDiv.style.display = 'block';
-                if(navigator.vibrate) navigator.vibrate(100);
+                if(navigator.vibrate) navigator.vibrate(50);
                 
                 recognition.start();
                 recognizing = true;
@@ -221,7 +229,7 @@
                 micWrapper.classList.remove('recording');
                 statusDiv.style.display = 'none';
                 if (lastPlayedVideo) {
-                    lastPlayedVideo.play(); // Retoma se houver erro ao iniciar
+                    lastPlayedVideo.play();
                 }
             }
         }
