@@ -27,11 +27,11 @@
         align-items: center;
     }
     #playPauseButton:not(.is-paused) {
-        padding: 0 7px; /* Altura do botão Play reduzida */
+        padding: 0 10px; /* Altura do botão Play reduzida */
         font-size: 16px; /* Tamanho da fonte do texto Play reduzido em 50% */
     }
     #playPauseButton.is-paused {
-        padding: 1.0px 5px; /* Tamanho do botão Pause reduzido em 50% */
+        padding: 2.5px 10px; /* Tamanho do botão Pause reduzido em 50% */
         font-size: 16px; /* Tamanho da fonte do texto Pause reduzido em 50% */
     }
     #playPauseButton span { 
@@ -39,10 +39,10 @@
         line-height: 1;
     }
     #playPauseButton:not(.is-paused) span {
-        font-size: 4em; /* Tamanho do ícone mantido (4em * 9px = 36px) */
+        font-size: 2em; /* Ícone de Play reduzido em 50% */
     }
     #playPauseButton.is-paused span {
-        font-size: 3em; /* Ícone de Pause reduzido em 50% */
+        font-size: 0.5em; /* Ícone de Pause reduzido em 50% */
     }
     #playPauseButton.rotating{transform:rotate(360deg)}
     #playPauseButton:hover{transform:scale(1.05)}
@@ -320,7 +320,7 @@
             try {
                 micWrapper.classList.add('recording');
                 statusDiv.style.display = 'block';
-                if(navigator.vibrate) navigator.vibrate(50);
+                if(navigator.vibrate) navigator.vibrate(200);
                 
                 recognition.start();
                 recognizing = true;
@@ -362,4 +362,3 @@
   </script>
 </body>
 </html>
-
