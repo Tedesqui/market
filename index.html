@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-t" />
   <title>𝐃𝐎𝐌 𝐀𝐓𝐀𝐂𝐀𝐃𝐈𝐒𝐓𝐀 (𝐈𝐀)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -12,6 +12,19 @@
 
   <style>
     body{margin:0}
+    #initial-message{
+        position:fixed;
+        top:50%;
+        left:50%;
+        transform:translate(-50%,-50%);
+        padding:20px;
+        background-color:rgba(0,0,0,0.7);
+        color:white;
+        border-radius:10px;
+        z-index:10000;
+        font-size:18px;
+        text-align:center;
+    }
     #playPauseButton{
         position:fixed;
         top:20px;
@@ -95,6 +108,7 @@
 </head>
 
 <body style="margin: 0; overflow: hidden;">
+  <div id="initial-message">Aponte seu celular para frente para ver o video</div>
   <button id="playPauseButton"><span>▶</span> Play</button>
 
   <a-scene 
@@ -137,6 +151,13 @@
   </div>
 
   <script>
+    window.addEventListener('load', () => {
+      const initialMessage = document.getElementById('initial-message');
+      setTimeout(() => {
+        initialMessage.style.display = 'none';
+      }, 5000);
+    });
+  
     const micWrapper = document.getElementById('mic-wrapper');
     const micButton = document.getElementById('mic-button');
     const statusDiv = document.getElementById('status');
